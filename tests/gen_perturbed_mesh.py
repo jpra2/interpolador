@@ -9,12 +9,15 @@ def main(seed=3):
     path = os.path.join('mesh', 'layer_spe10.msh')
     path2 = os.path.join('mesh', 'layer_spe10_perturbada.msh')
     
+    Lx = 60
+    Ly = 220
+    
     random.seed(seed)
     
     gmsh.initialize()
     gmsh.open(path)
     
-    fator_ruido = 0.2
+    fator_ruido = 0.15
 
     # 3. Obter todos os nós da malha
     node_tags, coords, _ = gmsh.model.mesh.getNodes()
@@ -22,6 +25,13 @@ def main(seed=3):
     coords = np.array(coords, dtype=float).reshape(-1, 3)
     
     ids, nos_por_elemento = extrair_conectividade_2d()
+    
+    np.save(os.path.join('results', 'elements_ids.npy'), ids)
+    np.save(os.path.join('results', 'nodes_per_element.npy'), nos_por_elemento)
+    np.save(os.path.join('results', 'node_tags.npy'), node_tags)
+    np.save(os.path.join('results', 'coords.npy'), coords)
+    
+    import pdb; pdb.set_trace()
     
     # Colocar as coordenadas em um dicionário {id_do_no: [x, y, z]} para facilitar a edição
     mapa_coordenadas = {tag: list(coords[i*3 : (i+1)*3]) for i, tag in enumerate(node_tags)}
@@ -50,8 +60,8 @@ def main(seed=3):
             x, y, z = coords[i]
             
             # Gera o deslocamento aleatório
-            dx = (random.random() - 0.5) * fator_ruido
-            dy = (random.random() - 0.5) * fator_ruido
+            dx = (random.random() - 0.5) * fator_ruido * Lx
+            dy = (random.random() - 0.5) * fator_ruido * Ly
             
             novo_x = x + dx
             novo_y = y + dy
