@@ -5,6 +5,17 @@ import numpy as np
 
 from packs.get_connect import extrair_conectividade_2d
 
+def plot_ids(path):
+    from packs.manager import MeshData
+    mesh_data = MeshData(dim=2, mesh_path=path)
+    all_faces = mesh_data.all_faces
+    fids = np.arange(len(all_faces))
+    mesh_data.create_tag('FACEID', data_type='int')
+    mesh_data.insert_tag_data('FACEID', fids, elements_type='faces')
+    mesh_data.export_all_elements_type_to_vtk('teste2', element_type='faces')
+    
+    
+    
 def main(seed=3):
     path = os.path.join('mesh', 'layer_spe10.msh')
     path2 = os.path.join('mesh', 'layer_spe10_perturbada.msh')
@@ -17,7 +28,7 @@ def main(seed=3):
     gmsh.initialize()
     gmsh.open(path)
     
-    fator_ruido = 0.15
+    fator_ruido = 5
 
     # 3. Obter todos os nós da malha
     node_tags, coords, _ = gmsh.model.mesh.getNodes()
@@ -30,8 +41,7 @@ def main(seed=3):
     np.save(os.path.join('results', 'nodes_per_element.npy'), nos_por_elemento)
     np.save(os.path.join('results', 'node_tags.npy'), node_tags)
     np.save(os.path.join('results', 'coords.npy'), coords)
-    
-    import pdb; pdb.set_trace()
+
     
     # Colocar as coordenadas em um dicionário {id_do_no: [x, y, z]} para facilitar a edição
     mapa_coordenadas = {tag: list(coords[i*3 : (i+1)*3]) for i, tag in enumerate(node_tags)}
@@ -60,8 +70,8 @@ def main(seed=3):
             x, y, z = coords[i]
             
             # Gera o deslocamento aleatório
-            dx = (random.random() - 0.5) * fator_ruido * Lx
-            dy = (random.random() - 0.5) * fator_ruido * Ly
+            dx = (random.random() - 0.5) * fator_ruido
+            dy = (random.random() - 0.5) * fator_ruido
             
             novo_x = x + dx
             novo_y = y + dy
